@@ -1,4 +1,4 @@
-package com.example.kimkayfx_signals
+package com.kimkayfx.kimkayfx_user_app
 
 import io.flutter.embedding.android.FlutterActivity
 

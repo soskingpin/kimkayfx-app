@@ -22,19 +22,21 @@ jobs:
           flutter-version: '3.16.0'
           channel: 'stable'
       
-      - name: Migrate Android to V2 Embedding
+      - name: Fix Android Project
         run: |
-          # Fix build.gradle
-          sed -i 's/apply plugin: .com.android.application./plugins { id "com.android.application" }/' android/app/build.gradle
-          sed -i '/id "com.android.application"/a \    id "kotlin-android"' android/app/build.gradle
-          sed -i '/id "kotlin-android"/a \    id "com.google.gms.google-services"' android/app/build.gradle
+          # Let Flutter auto-fix the Android embedding
+          flutter create . --platforms=android --no-overwrite
           
-          # Add namespace to android/app/build.gradle
-          sed -i '/android {/a \    namespace "com.kimkayfx.kimkayfx_user_app"' android/app/build.gradle
+          # Ensure google-services plugin is applied (handle both .gradle and .gradle.kts)
+          if [ -f "android/app/build.gradle" ]; then
+            grep -q "com.google.gms.google-services" android/app/build.gradle || echo -e "\napply plugin: 'com.google.gms.google-services'" >> android/app/build.gradle
+          elif [ -f "android/app/build.gradle.kts" ]; then
+            grep -q "google-services" android/app/build.gradle.kts || echo -e '\nplugins { id("com.google.gms.google-services") }' >> android/app/build.gradle.kts
+          fi
           
-          # Add V2 embedding meta-data to AndroidManifest.xml
-          if ! grep -q "flutterEmbedding" android/app/src/main/AndroidManifest.xml; then
-            sed -i '/<application>/a \        <meta-data android:name="flutterEmbedding" android:value="2" />' android/app/src/main/AndroidManifest.xml
+          # Ensure namespace exists in build.gradle
+          if [ -f "android/app/build.gradle" ]; then
+            grep -q "namespace" android/app/build.gradle || sed -i '/android {/a \    namespace "com.kimkayfx.kimkayfx_user_app"' android/app/build.gradle
           fi
       
       - name: Decode google-services.json

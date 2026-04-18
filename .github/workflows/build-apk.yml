@@ -9,22 +9,43 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
+      
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.16.0'
           channel: 'stable'
-      - name: Install dependencies
-        run: flutter pub get
+      
+      - name: Migrate Android to V2 Embedding
+        run: |
+          # Fix build.gradle
+          sed -i 's/apply plugin: .com.android.application./plugins { id "com.android.application" }/' android/app/build.gradle
+          sed -i '/id "com.android.application"/a \    id "kotlin-android"' android/app/build.gradle
+          sed -i '/id "kotlin-android"/a \    id "com.google.gms.google-services"' android/app/build.gradle
+          
+          # Add namespace to android/app/build.gradle
+          sed -i '/android {/a \    namespace "com.kimkayfx.kimkayfx_user_app"' android/app/build.gradle
+          
+          # Add V2 embedding meta-data to AndroidManifest.xml
+          if ! grep -q "flutterEmbedding" android/app/src/main/AndroidManifest.xml; then
+            sed -i '/<application>/a \        <meta-data android:name="flutterEmbedding" android:value="2" />' android/app/src/main/AndroidManifest.xml
+          fi
+      
       - name: Decode google-services.json
         run: echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 -d > android/app/google-services.json
+      
+      - name: Install dependencies
+        run: flutter pub get
+      
       - name: Build APK
         run: flutter build apk --release --split-per-abi
+      
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:

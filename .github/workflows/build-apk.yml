@@ -24,19 +24,14 @@ jobs:
       
       - name: Fix Android Project
         run: |
-          # Let Flutter auto-fix the Android embedding
-          flutter create . --platforms=android --no-overwrite
+          # Use correct project name (underscores, no hyphens)
+          flutter create . --platforms=android --no-overwrite --project-name kimkayfx_app
           
-          # Ensure google-services plugin is applied (handle both .gradle and .gradle.kts)
+          # Ensure google-services plugin is applied
           if [ -f "android/app/build.gradle" ]; then
             grep -q "com.google.gms.google-services" android/app/build.gradle || echo -e "\napply plugin: 'com.google.gms.google-services'" >> android/app/build.gradle
           elif [ -f "android/app/build.gradle.kts" ]; then
-            grep -q "google-services" android/app/build.gradle.kts || echo -e '\nplugins { id("com.google.gms.google-services") }' >> android/app/build.gradle.kts
-          fi
-          
-          # Ensure namespace exists in build.gradle
-          if [ -f "android/app/build.gradle" ]; then
-            grep -q "namespace" android/app/build.gradle || sed -i '/android {/a \    namespace "com.kimkayfx.kimkayfx_user_app"' android/app/build.gradle
+            grep -q "google-services" android/app/build.gradle.kts || echo -e '\nid("com.google.gms.google-services")' >> android/app/build.gradle.kts
           fi
       
       - name: Decode google-services.json

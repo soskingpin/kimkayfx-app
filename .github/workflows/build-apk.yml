@@ -16,10 +16,10 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
       
-      - name: Setup Flutter
+      - name: Setup Flutter ✅ UPGRADED
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.16.0'
+          flutter-version: '3.19.0'  # ✅ Fixed: Compatible with google_fonts 6.2.0+
           channel: 'stable'
       
       - name: Fix Android Project
@@ -29,29 +29,33 @@ jobs:
           
           # 1. Add Google Services classpath to ROOT build.gradle
           if [ -f "android/build.gradle" ]; then
-            # Add classpath inside buildscript dependencies if not present
             if ! grep -q "com.google.gms:google-services" android/build.gradle; then
               sed -i '/dependencies {/a \        classpath "com.google.gms:google-services:4.4.0"' android/build.gradle
             fi
           fi
           
-          # 2. Apply Google Services plugin to APP build.gradle (at the very end)
+          # 2. Apply Google Services plugin to APP build.gradle (at the END)
           if [ -f "android/app/build.gradle" ]; then
-            # Add apply plugin at the END of the file if not present
             if ! grep -q "com.google.gms.google-services" android/app/build.gradle; then
               echo "" >> android/app/build.gradle
               echo "apply plugin: 'com.google.gms.google-services'" >> android/app/build.gradle
             fi
           fi
           
-          # 3. Ensure namespace exists for Android V2
+          # 3. Set compileSdk to 34 for plugin compatibility
+          if [ -f "android/app/build.gradle" ]; then
+            sed -i 's/compileSdkVersion [0-9]*/compileSdkVersion 34/' android/app/build.gradle
+            sed -i 's/compileSdk = [0-9]*/compileSdk = 34/' android/app/build.gradle
+          fi
+          
+          # 4. Ensure namespace exists for Android V2
           if [ -f "android/app/build.gradle" ]; then
             if ! grep -q "namespace" android/app/build.gradle; then
               sed -i '/android {/a \    namespace "com.kimkayfx.kimkayfx_user_app"' android/app/build.gradle
             fi
           fi
           
-          # 4. Ensure V2 embedding meta-data in AndroidManifest.xml
+          # 5. Ensure V2 embedding meta-data in AndroidManifest.xml
           if [ -f "android/app/src/main/AndroidManifest.xml" ]; then
             if ! grep -q "flutterEmbedding" android/app/src/main/AndroidManifest.xml; then
               sed -i '/<application>/a \        <meta-data android:name="flutterEmbedding" android:value="2" />' android/app/src/main/AndroidManifest.xml

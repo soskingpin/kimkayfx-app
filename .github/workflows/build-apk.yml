@@ -22,46 +22,6 @@ jobs:
           flutter-version: '3.19.0'
           channel: 'stable'
       
-      - name: Fix Android Project
-        run: |
-          # 1. Generate fresh Android files with correct project name
-          flutter create . --platforms=android --no-overwrite --project-name kimkayfx_app
-          
-          # 2. Add Google Services classpath to ROOT build.gradle (Groovy)
-          if [ -f "android/build.gradle" ]; then
-            # Add classpath after the dependencies { line
-            awk '/dependencies \{/{print; print "        classpath \"com.google.gms:google-services:4.4.0\""; next}1' android/build.gradle > android/build.gradle.tmp && mv android/build.gradle.tmp android/build.gradle
-          fi
-          
-          # 3. Apply Google Services plugin to APP build.gradle (Groovy) - APPEND TO END
-          if [ -f "android/app/build.gradle" ]; then
-            # Only add if not already present
-            if ! grep -q "com.google.gms.google-services" android/app/build.gradle; then
-              echo "" >> android/app/build.gradle
-              echo "apply plugin: 'com.google.gms.google-services'" >> android/app/build.gradle
-            fi
-          fi
-          
-          # 4. Set compileSdk to 34
-          if [ -f "android/app/build.gradle" ]; then
-            sed -i 's/compileSdkVersion [0-9]\+/compileSdkVersion 34/g' android/app/build.gradle
-            sed -i 's/compileSdk = [0-9]\+/compileSdk = 34/g' android/app/build.gradle
-          fi
-          
-          # 5. Ensure namespace exists
-          if [ -f "android/app/build.gradle" ]; then
-            if ! grep -q "namespace" android/app/build.gradle; then
-              sed -i '/^android {/a \    namespace "com.kimkayfx.kimkayfx_user_app"' android/app/build.gradle
-            fi
-          fi
-          
-          # 6. Ensure V2 embedding in AndroidManifest.xml
-          if [ -f "android/app/src/main/AndroidManifest.xml" ]; then
-            if ! grep -q "flutterEmbedding" android/app/src/main/AndroidManifest.xml; then
-              sed -i '/<application>/a \        <meta-data android:name="flutterEmbedding" android:value="2" />' android/app/src/main/AndroidManifest.xml
-            fi
-          fi
-      
       - name: Decode google-services.json
         run: echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 -d > android/app/google-services.json
       

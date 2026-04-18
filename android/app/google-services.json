@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "120005503166",
+    "firebase_url": "https://ultra-signals-1-default-rtdb.firebaseio.com",
+    "project_id": "ultra-signals-1",
+    "storage_bucket": "ultra-signals-1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:120005503166:android:33615aa832b387076716ef",
+        "android_client_info": {
+          "package_name": "com.kimkayfx.kimkayfx_user_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "120005503166-8f82r0qflo6kv9btgthno2dlso0k479t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAm5Kvj8G7_WgpjdjuZz-Nkk-4-mr5DIec"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "120005503166-8f82r0qflo6kv9btgthno2dlso0k479t.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

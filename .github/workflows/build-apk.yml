@@ -25,21 +25,15 @@ jobs:
       - name: Decode google-services.json
         run: echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 -d > android/app/google-services.json
       
-      - name: Ensure Android V2 Embedding
+      - name: Ensure Android V2 Embedding (Manifest Fix)
         run: |
-          # 1. Ensure meta-data in AndroidManifest.xml
-          if ! grep -q "flutterEmbedding" android/app/src/main/AndroidManifest.xml; then
-            sed -i '/<application>/a \        <meta-data android:name="flutterEmbedding" android:value="2" />' android/app/src/main/AndroidManifest.xml
-          fi
-          
-          # 2. Ensure MainActivity extends FlutterActivity (V2)
-          MAIN_ACTIVITY="android/app/src/main/kotlin/com/kimkayfx/kimkayfx_user_app/MainActivity.kt"
-          if [ -f "$MAIN_ACTIVITY" ]; then
-            # Replace old import with new V2 import
-            sed -i 's/io.flutter.app.FlutterActivity/io.flutter.embedding.android.FlutterActivity/g' "$MAIN_ACTIVITY"
-            # Ensure class extends FlutterActivity
-            sed -i 's/class MainActivity: FlutterActivity()/class MainActivity: FlutterActivity()/g' "$MAIN_ACTIVITY"
-          fi
+          MANIFEST="android/app/src/main/AndroidManifest.xml"
+          # Remove any existing flutterEmbedding meta-data first (avoid duplicates)
+          sed -i '/flutterEmbedding/d' "$MANIFEST"
+          # Add the EXACT meta-data tag Flutter 3.19+ requires
+          sed -i '/<application>/a \        <meta-data android:name="flutterEmbedding" android:value="2" />' "$MANIFEST"
+          # Verify it was added
+          grep "flutterEmbedding" "$MANIFEST" || exit 1
       
       - name: Install dependencies
         run: flutter pub get
